@@ -1,11 +1,15 @@
-
+import 'dart:developer';
+import 'dart:io';
+import 'package:image/image.dart' as ui;
 
 import 'package:accruontest/ui/widgets/app_text_view.dart';
 import 'package:accruontest/util/app_color.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+import 'package:image_picker/image_picker.dart';
+import 'package:location/location.dart';
+import 'package:image/image.dart' as img;
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -15,47 +19,63 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
- void camera()async{
-   final cameras=await availableCameras();
+   File? _originalImage;
+  late File _watermarkImage;
+  late File _watermarkedImage;
 
- }
 
- late CameraController _cameraController;
+  Future getOriginalImage() async {
+    final picker=ImagePicker();
+    final XFile? pickedFile = await picker.pickImage(source: ImageSource.camera);
+    if(pickedFile!=null){
+      final File imageFile=File(pickedFile!.path);
+      setState(() {
+        _originalImage =imageFile;
+        log("image===$_originalImage");
+      });
+    }
 
- Future initCamera(CameraDescription cameraDescription) async {
-// create a CameraController
-   _cameraController = CameraController(
-       cameraDescription, ResolutionPreset.high);
-// Next, initialize the controller. This returns a Future.
-   try {
-     await _cameraController.initialize().then((_) {
-       if (!mounted) return;
-       setState(() {});
-     });
-   } on CameraException catch (e) {
-     debugPrint("camera error $e");
-   }
- }
+  }
 
- @override
+  // Future getWatermarkImage() async {
+  //   final pickedFile = await picker.getImage(source: ImageSource.gallery);
+  //   setState(() {
+  //     _watermarkImage = File(pickedFile.path);
+  //   });
+  // }
+
+
+  @override
+
 
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
-      appBar:AppBar(
+
+    return Scaffold(
+      appBar: AppBar(
         centerTitle: true,
         backgroundColor: AppColor.blue,
-        title: appTextView(name: "Home Page",color: Colors.white,fontWeight: FontWeight.bold),
+        title: appTextView(
+            name: "Home Page",
+            color: Colors.white,
+            fontWeight: FontWeight.bold),
       ),
-      body: Column(
-        children: [
-ElevatedButton(onPressed: (){
-  initCamera(CameraDescription(name: "aaa", lensDirection: CameraLensDirection.back, sensorOrientation:12));
+      body: Center(
+        child: Column(
+          children:[
+            ElevatedButton(onPressed: (){
+              getOriginalImage();
 
-}, child:Icon(Icons.camera_alt))
-        ],
-      ),
+            }, child: appTextView(name: "Camera")),
+           _originalImage==null?appTextView(name: "No Image"): Image.file(_originalImage!)
 
+
+          ],
+        ),
+      )
     );
   }
+
+
+
 }
